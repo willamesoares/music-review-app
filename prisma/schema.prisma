@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum ReviewType {
+  ALBUM
+  ARTIST
+  SONG
+}
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  email     String   @unique
+  username  String   @unique
+  imageUrl  String?
+  role      Role     @default(USER)
+  reviews   Review[]
+}
+
+model Review {
+  id         String     @id @default(uuid())
+  createdAt  DateTime   @default(now())
+  text       String
+  rating     Float
+  reviewType ReviewType
+  User       User       @relation(fields: [userId], references: [id])
+  userId     String
+  Song       Song?      @relation(fields: [songId], references: [id])
+  songId     String?
+  Album      Album?     @relation(fields: [albumId], references: [id])
+  albumId    String?
+  Artist     Artist?    @relation(fields: [artistId], references: [id])
+  artistId   String?
+}
+
+model Song {
+  id           String   @id @default(uuid())
+  name         String
+  Artist       Artist   @relation(fields: [artistId], references: [id])
+  artistId     String
+  Album        Album    @relation(fields: [albumId], references: [id])
+  albumId      String
+  imageUrl     String?
+  rating       Float?
+  reviewsCount Int?
+  reviews      Review[]
+}
+
+model Album {
+  id           String   @id @default(uuid())
+  name         String
+  Artist       Artist   @relation(fields: [artistId], references: [id])
+  artistId     String
+  imageUrl     String?
+  rating       Float?
+  reviewsCount Int?
+  reviews      Review[]
+  songs        Song[]
+}
+
+model Artist {
+  id           String   @id @default(uuid())
+  name         String
+  imageUrl     String?
+  rating       Float?
+  reviewsCount Int?
+  reviews      Review[]
+  albums       Album[]
+  songs        Song[]
+}
